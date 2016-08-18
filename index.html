@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.12.4.min.js"></script>
+        <title>uploadfile</title>
+    </head>
+    <body>
+        <input type="file" name="name" value="" id="uploadimagefile">
+        <input type="button" value="上传" onclick="uploadimage()"/>
+        <script type="text/javascript">
+            function uploadimage() {
+                var formdata = new FormData();
+                resize($('#uploadimagefile')[0].files[0], 1000, 1000, function (newfile) {
+                    formdata.append('file', newfile);
+                    $.ajax({
+                        url: 'index.php',
+                        method: 'post',
+                        data: formdata,
+                        processData: false,
+                        contentType: 'enctype="multipart/form-data"',
+                        success: function(d) {
+
+                        }
+                    });
+                });
+            }
+
+            function resize(file, maxWidth, maxHeight, done) {
+                var newfile = null;
+                var img = new Image();
+                fileReader = new FileReader();
+                fileReader.addEventListener('load', function () {
+                    img.src = fileReader.result;
+                    var newWH = getNewWH(img.width, img.height, maxWidth, maxHeight);
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    canvas.width = newWH[0];
+                    canvas.height = newWH[1];
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    var newfile = dataURItoBlob(canvas.toDataURL(file.type));
+                    done(newfile);
+                });
+                fileReader.readAsDataURL(file);
+                return newfile;
+            }
+
+            //等比缩小图片
+            function getNewWH(oWidth, oHeight, maxWidth, maxHeight) {
+                var newW = oWidth;
+                var newH = oHeight;
+                var whRatio = oWidth / oHeight;
+                var overWidth = oWidth / maxWidth;
+                var overHeight = oHeight / maxHeight;
+                if (overWidth > overHeight && overWidth > 1) {
+                    newW = maxWidth;
+                    newH = maxWidth / whRatio;
+                } else if (overWidth <= overHeight && overHeight > 1) {
+                    newW = maxHeight * whRatio;
+                    newH = maxHeight;
+                }
+                return [newW, newH];
+            }
+
+            function dataURItoBlob(dataURI) {
+                // convert base64/URLEncoded data component to raw binary data held in a string
+                var byteString;
+                if (dataURI.split(',')[0].indexOf('base64') >= 0)
+                    byteString = atob(dataURI.split(',')[1]);
+                else
+                    byteString = unescape(dataURI.split(',')[1]);
+
+                // separate out the mime component
+                var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+
+                // write the bytes of the string to a typed array
+                var ia = new Uint8Array(byteString.length);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+
+                return new Blob([ia], {type:mimeString});
+            }
+        </script>
+    </body>
+</html>
