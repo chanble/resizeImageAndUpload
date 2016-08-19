@@ -2,27 +2,26 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.12.4.min.js"></script>
+        <script src="//cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
         <title>uploadfile</title>
     </head>
     <body>
         <input type="file" name="name" value="" id="uploadimagefile">
         <input type="button" value="上传" onclick="uploadimage()"/>
+        <form class="" action="index.php" method="post" enctype="multipart/form-data">
+            <input type="file" name="file1"/>
+            <input type="submit" value="upload" />
+        </form>
         <script type="text/javascript">
             function uploadimage() {
                 var formdata = new FormData();
+                var ofile = $('#uploadimagefile')[0].files[0];
                 resize($('#uploadimagefile')[0].files[0], 1000, 1000, function (newfile) {
-                    formdata.append('file', newfile);
-                    $.ajax({
-                        url: 'index.php',
-                        method: 'post',
-                        data: formdata,
-                        processData: false,
-                        contentType: 'enctype="multipart/form-data"',
-                        success: function(d) {
+                    formdata.append('file', newfile, ofile.name);
+                    var xhr = new XMLHttpRequest();
 
-                        }
-                    });
+                    xhr.open('post', 'index.php');
+                    xhr.send(formdata);
                 });
             }
 
@@ -42,7 +41,6 @@
                     done(newfile);
                 });
                 fileReader.readAsDataURL(file);
-                return newfile;
             }
 
             //等比缩小图片
@@ -78,8 +76,8 @@
                 for (var i = 0; i < byteString.length; i++) {
                     ia[i] = byteString.charCodeAt(i);
                 }
-
-                return new Blob([ia], {type:mimeString});
+                var newFile = new Blob([ia], {type: mimeString});
+                return newFile;
             }
         </script>
     </body>
